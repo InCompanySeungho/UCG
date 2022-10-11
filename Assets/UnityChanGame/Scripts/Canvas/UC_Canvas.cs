@@ -20,7 +20,6 @@ namespace UC
         public void SKILL_DRIFT_DOWN()
         {
             _skillManager.PushingSkill_Down(image_drift_Fill, image_drift_Effect);
-            Debug.Log("드리프트 다운");
         }
 
         public void SKILL_DRIFT_UP(float _cooldown) // 쿨타임은 메인에서 설정하도록

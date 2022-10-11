@@ -22,6 +22,7 @@ namespace UC
         private UC_CameraController cameraController;
         private Rigidbody myRigid;
 
+        
         private enum State
         {
             SIGHT_1,
@@ -34,7 +35,18 @@ namespace UC
 
         [SerializeField] private UC_Mesh meshManager;
 
-
+        private  IEnumerator IE_Drift;
+        
+        // 키 입력중인지 
+        private bool isDashing;
+        private bool isJumping;
+        
+        
+        // 키 입력 가능여부
+        private bool canDash;
+        private bool canJump;
+        
+        
         // 움직임 관련
         // [점프]
         private bool canSuperJump = false;
@@ -61,6 +73,10 @@ namespace UC
             cameraController = Camera.main.GetComponent<UC_CameraController>();
             meshManager.MeshControl("First");
             cameraController.ChangeSight("First");
+
+            canDash = true;
+            canJump = true;
+            IE_Drift = CRT_Skill_Drift_DOWN();
         }
 
         int count = 0;
@@ -123,6 +139,8 @@ namespace UC
 
             if (Input.GetKeyDown(KeyCode.Space))
             {
+                if (!canJump)
+                    return;
                 curr_Ypos = this.gameObject.transform.position.y;
                 
                 if (canSuperJump) // 슈퍼점프 
@@ -131,18 +149,18 @@ namespace UC
                 }
                 else // 일반점프
                 {
-                    
+                    //_animController.Jump();
+                    this.gameObject.transform.DOLocalJump
+                        (Vector3.up,
+                            2f,
+                            1,
+                            0.3f).SetRelative(true).SetEase(Ease.InSine)
+                        .OnComplete(() =>
+                        {
+                            //_state = State.JUMP;
+                        });
                 }
-                //_animController.Jump();
-                this.gameObject.transform.DOLocalJump
-                    (Vector3.up,
-                        1f,
-                        1,
-                    0.3f).SetRelative(true).SetEase(Ease.InSine)
-                    .OnComplete(() =>
-                    {
-                        _state = State.JUMP;
-                    });
+     
             }
             // 점프 중일 때 안때면 좀 더 올라감
             if(Input.GetKey(KeyCode.Space))
@@ -159,7 +177,7 @@ namespace UC
                     {
                         curr_Ypos += 0.2f;
                     } 
-                    Debug.Log("이 이상 높아지면 안돼!");
+                    //Debug.Log("이 이상 높아지면 안돼!");
                 }
             }
             if (_state == State.JUMP)
@@ -189,15 +207,30 @@ namespace UC
 
             #region 특수스킬
 
+            
             if (Input.GetKeyDown(KeyCode.LeftShift))
             {
-                _canvas.SKILL_DRIFT_DOWN();
-                canSuperJump = true;
-                // 슈퍼점프 가능
+                if (canDash)
+                {
+                    canDash = false;
+                    isDashing = true;
+                    _canvas.SKILL_DRIFT_DOWN();
+                    canSuperJump = true;
+                    // 슈퍼점프 가능
+                    StartCoroutine(IE_Drift);
+                }
+                
             }
             else if (Input.GetKeyUp(KeyCode.LeftShift))
             {
-                StartCoroutine(CRT_Skill_Drift());
+                Debug.Log("쉬프트 손 때기");
+                if (isDashing == true)
+                {
+                    Debug.Log("대쉬중에 손 때서 대쉬 취소된다.");
+                    StopCoroutine(IE_Drift);
+                    isDashing = false;
+                    StartCoroutine(CRT_Skill_Drift_UP());
+                }
                 // Up 하고 0.5초 이내까지는 슈퍼점프 되도록
             }
 
@@ -210,7 +243,29 @@ namespace UC
         }
 
 
-        IEnumerator CRT_Skill_Drift()
+        IEnumerator CRT_Skill_Drift_DOWN() // IE_Drift 에 할당
+        {
+            Debug.Log("드리프트 다운");
+            int count = 0;
+            while (isDashing)
+            {
+                if (count == 2)
+                {
+                    Debug.Log("대쉬 자동 해제");
+                    isDashing = false;
+                    canDash = true;
+                    StopCoroutine(IE_Drift);
+                    StartCoroutine(CRT_Skill_Drift_UP());
+                    count = 0;
+                }
+                yield return new WaitForSeconds(0.5f);
+                count++;
+                Debug.Log("카운트 증가, 현재 카운트 = " + count);
+            }
+            Debug.Log("와일문 탈출");
+            yield return null;
+        }
+        IEnumerator CRT_Skill_Drift_UP()
         {
             float _jumpdelay = 0.5f;
             float _cooltime = 1.5f;
@@ -219,6 +274,8 @@ namespace UC
             canSuperJump = false;
             yield return new WaitForSeconds(_cooltime - _jumpdelay);
             _canvas.COOL_DOWN(0);
+            canDash = true;
+            yield return null;
         }
 
         float horizontal; // = Input.GetAxisRaw("Horizontal");
@@ -343,31 +400,10 @@ namespace UC
                     mouseX,
                     0);
         }
-        
-        private void OnTriggerEnter(Collider other)
-        {
-            // 점프 후 지면 확인용.
-            //if (_state == State.JUMP)
-            {
-                if (other.transform.CompareTag("Plane"))
-                {
-                    Debug.Log("콘치즈");
-                    isLanded = true;
-                }    
-            }
-        }
 
-        private void OnTriggerExit(Collider other)
+        public void isLand(bool _island)
         {
-            // 내가 지면에서 점프를 했당
-            //if (_state == State.SIGHT_1)
-            {
-                if (other.transform.CompareTag("Plane"))
-                {
-                    isLanded = false;
-                }
-            }
-                
+            
         }
     }
 }
