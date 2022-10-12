@@ -39,7 +39,6 @@ namespace UC
                     }
                 );
         }
-
         // 눌렀을 때 동작
         public void NormalSkill_Down(Image _filliamge, Image _effectImage)
         {
@@ -61,6 +60,21 @@ namespace UC
                     _fillImage.DOFade(0f, 0.2f).SetEase(Ease.Linear);
                 });
         }
+        
+        public void mouse_Input_Down(Image[] _images, float _duration)
+        {
+            _images[0].DOFade(1f, _duration).SetEase(Ease.InSine);
+            _images[1].DOFade(1f, _duration).SetEase(Ease.InSine).SetDelay(_duration);
+        }
+
+        public void mouse_Input_Up(Image[] _images)
+        {
+            for (int i = 0; i < _images.Length; i++)
+            {
+                _images[i].color = new Color(1, 1, 1, 0);
+            }
+        }
+        
     }
     
 }
