@@ -18,12 +18,25 @@ namespace  UC
             {
                 case "First": 
                     mesh_Face.SetActive(false);
-                    //mesh_Body.SetActive(false);
+                    mesh_Body.SetActive(false);
                     break;
                 case"Third":
                     mesh_Face.SetActive(true);
-                    //mesh_Body.SetActive(true);
+                    mesh_Body.SetActive(true);
                     break;
+            }
+        }
+
+        private bool _isActive;
+        public bool BodyMesh
+        {
+            get
+            {
+                return _isActive;
+            }
+            set
+            {
+                mesh_Body.SetActive(value);
             }
         }
     }
