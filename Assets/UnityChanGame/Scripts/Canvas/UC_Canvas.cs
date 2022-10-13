@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using Unity.PlasticSCM.Editor.CollabMigration;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,12 @@ namespace UC
         [SerializeField] private Image image_drift_Effect;
         [SerializeField] private Image image_CooldownEffect;
 
+
+
+        private GameObject crosshair_Charging;
+        [SerializeField] private GameObject crosshair_Normal;
+        [Header("0이 가장 아래가 되도록")]
+        [SerializeField] private Image[] image_Charging;
         
         
         public void SKILL_DRIFT_DOWN()
@@ -33,16 +40,64 @@ namespace UC
             image_CooldownEffect.transform.DOScale(3f, 0.15f).SetEase(Ease.InSine).From(1f);
         }
 
+
+        // 우클릭 누름. 차징 시작
+        public void mouse_Right_DOWN()
+        {
+            crosshairSetting(1);
+            _skillManager.mouse_Input_Down(image_Charging, 0.3f);
+        }
+
+        // 우클릭 땜. 차징 취소 밑 초기화
+        public void mouse_Right_UP()
+        {
+            crosshairSetting(0);
+            _skillManager.mouse_Input_Up();
+        }
+        
+        /// <summary>
+        /// 현재 상태의 크로스헤어를 활성화한다.
+        /// </summary>
+        /// <param name="_num">0 : normal, 1 : charging<:/param>
+        private void crosshairSetting(int _num)
+        {
+            crosshair_Charging.gameObject.SetActive(false);
+            crosshair_Normal.gameObject.SetActive(false);
+            switch (_num)
+            {
+                case 0:
+                    crosshair_Normal.SetActive(true);
+                    break;
+                case 1:
+                    crosshair_Charging.SetActive(true);
+                    break;
+                case 2:
+                    break;
+                default:
+                    // 0과 동일한 로직
+                    break;
+            }
+        }
+        
+        /// <summary>
+        /// 초기값 설정
+        /// </summary>
         void Initialize()
         {
             image_drift_Fill.color = Color.white;
             image_drift_Effect.color = Color.white;
             image_CooldownEffect.color = new Color(1,1,1,0);
+            
+            
+            //mouse_Right_UP();
+            crosshairSetting(0);
         }
         void Awake()
         {
+            crosshair_Charging = image_Charging[0].transform.parent.gameObject;
             _skillManager = this.GetComponent<UC_SkillManager>();
             Initialize();
+            
         }
     }
    

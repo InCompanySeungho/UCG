@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using JetBrains.Annotations;
+using TMPro;
 using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 
@@ -10,16 +12,20 @@ namespace UC
     {
         public LayerMask planeLayer;
         private MoveActor _moveActor;
-        [SerializeField] private Transform tf_Foorpoint;
+        [SerializeField] private Transform tf_Foorpoint; // PlaneRay's point
+        [SerializeField] [NotNull] private Transform tf_Viewpoint;   // ViewpointRay's point
         private Color _color;
+        private Color frayColor;
         private void Awake()
         {
             _moveActor = this.GetComponent<MoveActor>();
             _color = Color.red;
+            frayColor = Color.green;
         }
 
         private void Update()
         {
+            CheckViewpointRay();
             if (_moveActor.JumpProperty) // 점프중인지 검사먼저
                 return;
             //Debug.Log("지면검사 하고있음");
@@ -27,9 +33,32 @@ namespace UC
             CheckPlaneRay();
         }
 
+
+        private void CheckViewpointRay()
+        {
+            Ray ray = new Ray(tf_Viewpoint.position,
+                tf_Viewpoint.forward);
+            RaycastHit hitdata;
+            Debug.DrawRay(tf_Viewpoint.position, ray.direction, frayColor);
+            if(Physics.Raycast(ray, out hitdata, 20f))
+            {
+                if (hitdata.transform.CompareTag("Monster"))
+                {
+                    Debug.Log("몬스터 보는중");
+                    _moveActor.TargetingProperty = true;
+                    frayColor = Color.red;
+                }
+                else
+                {
+                    Debug.Log("몬스터 보고있지 않음");
+                    _moveActor.TargetingProperty = false;
+                    frayColor = Color.green;
+                }
+                
+            }
+        }
        private void CheckPlaneRay()
         {
-
             Ray ray = new Ray(tf_Foorpoint.position, -transform.up);
             RaycastHit hitData;
           

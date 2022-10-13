@@ -12,10 +12,12 @@ using UnityEngine.UI;
 using UnityEngine.UIElements;
 using Cursor = UnityEngine.Cursor;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
+using UnityEngine.Rendering;
 
 namespace UC
 {
-    public class MoveActor : MonoBehaviour
+    public class MoveActor : MonoBehaviour, IPointerClickHandler
     {
         private CharacterController controller;
         [SerializeField] private CinemachineVirtualCamera _virtualCam;
@@ -56,13 +58,17 @@ namespace UC
         private float curr_Ypos; // 현재 Y좌표
         private float dest_Ypos; // 목표 Y좌표  
 
+        
+        // 상태정보
+        private bool isTargeting;
         void Awake()
         {
             controller = this.GetComponent<CharacterController>();
             //myRigid = this.GetComponent<Rigidbody>();
-            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.lockState = CursorLockMode.Confined;
             Cursor.visible = false;
-
+            Screen.SetResolution(1920, 1080,
+                FullScreenMode.FullScreenWindow,0);
             //rb = GetComponent<Rigidbody>();
             //rb.freezeRotation = true;
 
@@ -89,6 +95,18 @@ namespace UC
     
         void Update()
         {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Debug.Log("입력");
+            }
+            if(Input.GetMouseButtonDown(1))
+            {
+                _canvas.mouse_Right_DOWN();
+            }
+            else if (Input.GetMouseButtonUp(1))
+            {
+                _canvas.mouse_Right_UP();
+            }
             switch (_state)
             {
                 case State.SIGHT_1:
@@ -185,6 +203,9 @@ namespace UC
             {
                 if (canDash)
                 {
+                    // 카메라 위치 이동
+
+                    //tf_1stCamTf.transform.DOLocalMoveY(-1f, 0.5f).SetEase(Ease.Linear).SetRelative(true);
                     canDash = false;
                     isDashing = true;
                     _canvas.SKILL_DRIFT_DOWN();
@@ -195,10 +216,10 @@ namespace UC
             }
             else if (Input.GetKeyUp(KeyCode.LeftShift))
             {
-                //Debug.Log("쉬프트 손 때기");
                 if (isDashing == true)
                 {
-                    //Debug.Log("대쉬중에 손 때서 대쉬 취소된다.");
+                    //tf_1stCamTf.transform.DOLocalMoveY(1f, 0.5f).SetEase(Ease.Linear).SetRelative(true);
+                    // 카메라 위치 이동
                     StopCoroutine(IE_Drift);
                     isDashing = false;
                     StartCoroutine(CRT_Skill_Drift_UP());
@@ -358,7 +379,7 @@ namespace UC
 
         [SerializeField] private CinemachineVirtualCamera cam_1stSight;
         [SerializeField] private Transform tf_1stCamTf;
-
+        
         void MouseRot_FirstSight()
         {
             mouseX = Input.GetAxisRaw("Mouse X") * _sensitivity;
@@ -376,27 +397,11 @@ namespace UC
             RotateActor.transform.eulerAngles =
                 new Vector3(
                     0, cam_1stSight.transform.eulerAngles.y, 0);
+            
+            // Ray
+            
         }
-
-        float LIMIT_mouseY(float _value)
-        {
-            return Mathf.Clamp(_value, -30f, 30f);
-        }
-
-        IEnumerator CRT_ChangeDirecitonValue(float _startValue, float _endValue, float _duration)
-        {
-            float elapsed = 0.0f;
-            while (elapsed < _duration)
-            {
-                Debug.Log("<color=red> StartValue : " + _startValue + "</color>");
-                Debug.Log("<color=yellow> EndValue : " + _endValue + "</color>");
-                horizontal = Mathf.Lerp(_startValue, _endValue, elapsed / _duration);
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-
-            horizontal = _endValue;
-        }
+        
 
         private float mouseX;
         private float mouseY;
@@ -446,11 +451,33 @@ namespace UC
             }
         }
 
+        public bool TargetingProperty
+        {
+            get
+            {
+                return isTargeting;
+            }
+            set
+            {
+                if (isTargeting != value)
+                {
+                    isTargeting = value;
+                    Debug.Log("타겟팅 하고있는지 여부 변경, 현재 :" + isTargeting);
+                    ChangeCrosshair(isTargeting);
+                }
+                else return;
+            }
+        }
+        
+
+        void ChangeCrosshair(bool _value)
+        {
+            
+        }
         void ChangeLand(bool _value)
         {
-            if (_value)
+            if (_value) // canJump 를 true 로 변환
             {
-                Debug.Log("canJump =true로 변환");
                 canJump = true;
             }
             else
@@ -474,6 +501,13 @@ namespace UC
             canJump = true;
             curr_Ypos = this.gameObject.transform.position.y;
         }
-        
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData.button == PointerEventData.InputButton.Left)
+            {
+                Debug.Log("마우스 클릭 ");
+            }
+        }
     }
 }

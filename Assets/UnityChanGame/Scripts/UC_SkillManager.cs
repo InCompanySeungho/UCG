@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -60,21 +61,38 @@ namespace UC
                     _fillImage.DOFade(0f, 0.2f).SetEase(Ease.Linear);
                 });
         }
-        
+
+        //private Sequence mouseSequence = DOTween.Sequence();
         public void mouse_Input_Down(Image[] _images, float _duration)
         {
-            _images[0].DOFade(1f, _duration).SetEase(Ease.InSine);
-            _images[1].DOFade(1f, _duration).SetEase(Ease.InSine).SetDelay(_duration);
+            //_images[0].gameObject.transform.parent.gameObject.SetActive(true);
+            mouseSequence(_images, _duration).Restart();
+
         }
 
-        public void mouse_Input_Up(Image[] _images)
-        {
-            for (int i = 0; i < _images.Length; i++)
-            {
-                _images[i].color = new Color(1, 1, 1, 0);
-            }
+        public void mouse_Input_Up()
+        { 
+            // 다른 설정 없이 UC_Canvas의 crosshairSetting 함수에서 비활성화를 시키면될듯
+            //_crosshair.gameObject.SetActive(false);
         }
-        
+
+        // 게임오브젝트 활성화 되면 하는거로
+        Sequence mouseSequence(Image[] _images, float _duration)
+        {
+            return DOTween.Sequence()
+                .SetAutoKill(false)
+                .OnStart(() =>
+                {
+                    for (int i = 0; i < _images.Length; i++)
+                    {
+                        _images[i].color = new Color(1, 0, 0, 0.2f);
+                    }
+                    // 초기값
+                })
+                .Append(_images[0].DOFade(1f, _duration).SetEase(Ease.InSine)).SetDelay(0.2f)
+                .Append(_images[1].DOFade(1f, _duration).SetEase(Ease.InSine))
+                .Append(_images[2].DOFade(1f, _duration).SetEase(Ease.InSine));
+        }
     }
     
 }
