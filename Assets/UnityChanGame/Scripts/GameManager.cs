@@ -24,7 +24,5 @@ public class GameManager : MonoBehaviour
         instance = this;
     }
 
-
-    
-    
+    // 스테이지 정보
 }

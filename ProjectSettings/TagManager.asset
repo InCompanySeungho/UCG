@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Plane
   - Monster
+  - AttackRange
   layers:
   - Default
   - TransparentFX

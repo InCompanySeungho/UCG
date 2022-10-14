@@ -24,6 +24,8 @@ namespace UC
         [SerializeField] private Image[] image_Charging;
         
         
+        
+        
         public void SKILL_DRIFT_DOWN()
         {
             _skillManager.PushingSkill_Down(image_drift_Fill, image_drift_Effect);
@@ -54,7 +56,27 @@ namespace UC
             crosshairSetting(0);
             _skillManager.mouse_Input_Up();
         }
-        
+
+
+        public void mouse_Left_DOWN()
+        {
+            crosshair_Normal.transform.DOScale(1.2f, 0.12f).SetEase(Ease.OutCubic)
+                .OnComplete(() =>
+                {
+                    crosshair_Normal.transform.DOScale(1f, 0.2f).SetEase(Ease.Linear);
+                    //1f 로 사이즈 조절 뒤, Delegate를 넣던 콜백을 넣던 공격 가능상태임을 반환해줘야함
+                });
+        }
+
+        private void crosshairFade(Image _image)
+        {
+            
+        }
+
+        private void crosshairFade(Image[] _images)
+        {
+            
+        }
         /// <summary>
         /// 현재 상태의 크로스헤어를 활성화한다.
         /// </summary>

@@ -33,6 +33,8 @@ namespace  UC
         [SerializeField] private GameObject monsterPrefab;
         private Queue<UC_Monster> monsterQueue = new Queue<UC_Monster>();
 
+        
+
         public void Init(int _initCount)
         {
             Initialize(_initCount);
@@ -81,8 +83,20 @@ namespace  UC
             instance.monsterQueue.Enqueue(_monster);
         }
         
+        // 피격 당할 예정인 몬스터들
+        private Queue<UC_Monster> willHitMonsterQueue = new Queue<UC_Monster>();
 
 
+        public static UC_Monster getHitMonster(UC_Monster _monster)
+        {
+            _monster = instance.willHitMonsterQueue.Dequeue();
+            return _monster;
+        }
+
+        public void resetHitQueue()
+        {
+             willHitMonsterQueue.Clear();   
+        }
     }
     
 }
