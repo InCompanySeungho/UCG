@@ -40,21 +40,25 @@ namespace UC
                 tf_Viewpoint.forward);
             RaycastHit hitdata;
             Debug.DrawRay(tf_Viewpoint.position, ray.direction, frayColor);
-            if(Physics.Raycast(ray, out hitdata, 20f))
+            if(Physics.Raycast(ray, out hitdata, 2f))
             {
                 if (hitdata.transform.CompareTag("Monster"))
                 {
-                    Debug.Log("몬스터 보는중");
+                    //Debug.Log("몬스터 사정거리 안쪽");
                     _moveActor.TargetingProperty = true;
                     frayColor = Color.red;
                 }
                 else
                 {
-                    Debug.Log("몬스터 보고있지 않음");
+                    //Debug.Log("몬스터 사정거리 바깥쪽");
                     _moveActor.TargetingProperty = false;
                     frayColor = Color.green;
                 }
-                
+            }
+            else // 사정거리에 찍히는게 없어도 Targeting = false 상태임.
+            {
+                frayColor = Color.green;
+                _moveActor.TargetingProperty = false;
             }
         }
        private void CheckPlaneRay()
@@ -69,7 +73,6 @@ namespace UC
                 if (hitData.transform.CompareTag("Plane")) // 태그로 구분함!
                 {
                     _color= Color.blue;
-
                     if (!_moveActor.JumpProperty) // 점프가 아닐때를 가져온다
                     { 
                         float distance = tf_Foorpoint.position.y - hitData.point.y;

@@ -2,9 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using Cinemachine;
 using DG.Tweening;
 using TMPro.EditorUtilities;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
@@ -13,11 +15,10 @@ using UnityEngine.UIElements;
 using Cursor = UnityEngine.Cursor;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using UnityEngine.Rendering;
 
 namespace UC
 {
-    public class MoveActor : MonoBehaviour, IPointerClickHandler
+    public class MoveActor : MonoBehaviour
     {
         private CharacterController controller;
         [SerializeField] private CinemachineVirtualCamera _virtualCam;
@@ -38,9 +39,11 @@ namespace UC
 
         private State _state = State.SIGHT_1;
 
+        // Compoennt
         [SerializeField] private UC_Mesh meshManager;
+        private UC_AttackManager _attackManager;
 
-        private IEnumerator IE_Drift;
+        private IEnumerator IE_Drift; // 중간 취소를 위해서 Ienumerator 따로선언
 
         // 키 입력중인지 
         private bool isDashing;
@@ -50,7 +53,7 @@ namespace UC
         // 키 입력 가능여부
         private bool canDash;
         private bool canJump;
-
+       [SerializeField] private bool canAttack;
 
         // 움직임 관련
         // [점프]
@@ -61,6 +64,7 @@ namespace UC
         
         // 상태정보
         private bool isTargeting;
+        private bool isAttacking; // 연속 공격을 위한 .
         void Awake()
         {
             controller = this.GetComponent<CharacterController>();
@@ -84,20 +88,43 @@ namespace UC
 
             canDash = true;
             canJump = true;
-
+             canAttack = true;
+            
             isJumping = false;
             isLanded = true;
             IE_Drift = CRT_Skill_Drift_DOWN();
             gravityInit();
+
+            _attackManager = this.GetComponent<UC_AttackManager>();
         }
 
         int count = 0;
-    
+
+        
+        private float _attackingTime = 0f;
         void Update()
         {
+            if (Input.GetKeyDown(KeyCode.Tab))
+            {
+                canAttack = true;
+            }
+            if (isAttacking) // 연속 공격을 위한 타이머 동작해야댐
+            {
+                _attackingTime += Time.deltaTime;
+            }
+                
             if (Input.GetMouseButtonDown(0))
             {
-                Debug.Log("입력");
+                if (canAttack)
+                {
+                    Debug.Log("공격 입력 들어감");
+                    canAttack = false;
+                    _attackManager.NormalAttack();
+                }
+                else
+                {
+                    Debug.Log("아직 공격할수 없다");
+                }
             }
             if(Input.GetMouseButtonDown(1))
             {
@@ -450,7 +477,7 @@ namespace UC
                 return isJumping;
             }
         }
-
+        
         public bool TargetingProperty
         {
             get
@@ -462,7 +489,7 @@ namespace UC
                 if (isTargeting != value)
                 {
                     isTargeting = value;
-                    Debug.Log("타겟팅 하고있는지 여부 변경, 현재 :" + isTargeting);
+                    //Debug.Log("타겟팅 하고있는지 여부 변경, 현재 :" + isTargeting);
                     ChangeCrosshair(isTargeting);
                 }
                 else return;
@@ -485,7 +512,32 @@ namespace UC
                 
             }
         }
-        
+
+        public bool AttackProperty
+        {
+            get
+            {
+                return canAttack;
+            }
+            set
+            {
+                if (canAttack != value)
+                    canAttack = value;
+            }
+        }
+
+        public bool ContinuousProperty
+        {
+            get
+            {
+                return isAttacking;
+            }
+            set
+            {
+                if (isAttacking != value)
+                    isAttacking = value;
+            }
+        }
         // 혹시 땅 아래로 내려가질 경우에 땅 위로 강제고정
         public void SetPositionReset() 
         {
@@ -500,14 +552,6 @@ namespace UC
         {
             canJump = true;
             curr_Ypos = this.gameObject.transform.position.y;
-        }
-
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            if (eventData.button == PointerEventData.InputButton.Left)
-            {
-                Debug.Log("마우스 클릭 ");
-            }
         }
     }
 }
