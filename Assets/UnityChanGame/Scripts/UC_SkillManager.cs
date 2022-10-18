@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.UI;
@@ -62,18 +64,32 @@ namespace UC
                 });
         }
 
-        //private Sequence mouseSequence = DOTween.Sequence();
+        private bool CANDASH = false; // 우클릭 풀차징 후, 대시 가능 여부
+
+        public bool canDash
+        {
+            get
+            {
+                return CANDASH;
+            }
+            set
+            {
+                if (CANDASH != value)
+                    CANDASH = value;
+                else return;
+            }
+        }
         public void mouse_Input_Down(Image[] _images, float _duration)
         {
-            //_images[0].gameObject.transform.parent.gameObject.SetActive(true);
             mouseSequence(_images, _duration).Restart();
-
         }
 
-        public void mouse_Input_Up()
-        { 
-            // 다른 설정 없이 UC_Canvas의 crosshairSetting 함수에서 비활성화를 시키면될듯
-            //_crosshair.gameObject.SetActive(false);
+        public void mouse_Input_Up(Image [] _images)
+        {
+            for (int i = 0; i < _images.Length; i++)
+            {
+                _images[i].DOFade(0f, 0.1f).SetEase(Ease.Linear);
+            }
         }
 
         // 게임오브젝트 활성화 되면 하는거로
@@ -83,6 +99,7 @@ namespace UC
                 .SetAutoKill(false)
                 .OnStart(() =>
                 {
+                    canDash = false;
                     for (int i = 0; i < _images.Length; i++)
                     {
                         _images[i].color = new Color(1, 0, 0, 0.2f);
@@ -91,7 +108,11 @@ namespace UC
                 })
                 .Append(_images[0].DOFade(1f, _duration).SetEase(Ease.InSine)).SetDelay(0.2f)
                 .Append(_images[1].DOFade(1f, _duration).SetEase(Ease.InSine))
-                .Append(_images[2].DOFade(1f, _duration).SetEase(Ease.InSine));
+                .Append(_images[2].DOFade(1f, _duration).SetEase(Ease.InSine)).OnComplete(() =>
+                {
+                    Debug.Log("대쉬 가능한 상태가됨");
+                    canDash = true;
+                });
         }
     }
     
