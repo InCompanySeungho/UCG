@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 using UnityEditor.Profiling.Memory.Experimental;
 using UnityEngine;
 using UnityEngine.AI;
@@ -15,8 +17,8 @@ namespace UC
         private NavMeshAgent _agent;
         
         // Property
-       [SerializeField] private int _hp;
-        private int _maxHP = 3;
+        private int _hp;
+        private const int _maxHP = 3;
         private void Awake()
         {
             animator = this.transform.GetChild(0).GetComponent<Animator>();
@@ -30,18 +32,19 @@ namespace UC
             // 몬스터 hp UI
             this._canvas.transform.LookAt(Camera.main.transform.position);
         }
-        
+
         
         public void GetDamage(int _damage)
         {
-            if (_damage <= 0)
-                // 활동불가
+            _hp -= _damage;
+            if (_hp <= 0)
             {
                 animator.SetTrigger("Dead");
+                Debug.Log("나 주겅");
             }
             else
             {
-                _hp -= _damage;
+                Debug.Log("몬스터 피격 남은체력 : " + _hp  + " / " + _maxHP);
             }
         }
     }

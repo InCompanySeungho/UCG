@@ -8,9 +8,7 @@ namespace UC
 {
     public class UC_AttackManager : MonoBehaviour
     {
-        [SerializeField] private GameObject range_NormalAttack;
-
-        private MoveActor _moveActor; 
+        private UC_CharacterBase main; 
         // 공격 루틴이 돌아가고 있는지
         private bool isRoutineProgress = false;
 
@@ -20,12 +18,18 @@ namespace UC
         
         // 연속공격 취소까지의 딜레이시간
         private WaitForSeconds cancelDelay = new WaitForSeconds(1f);
+
+
+
+
+        [Header("AttackRange")]
+        [SerializeField] private UC_AttackRange range_NormalAttack;
         public void NormalAttack()
         {
             if (isRoutineProgress)
             {
                 routineCount++;
-                Debug.Log("루틴 카운트 : " + routineCount);
+                //Debug.Log("루틴 카운트 : " + routineCount);
                StopCoroutine(AttackRoutine);
                 if ( routineCount == 1)
                 {
@@ -57,66 +61,55 @@ namespace UC
         private IEnumerator AttackRoutine;
         private IEnumerator CRT_NormalAttack()
          {
-             _moveActor.ContinuousProperty = true;
-             Debug.Log("<color=yellow>1 : 공격</color>");
-             yield return attackDelay;
+             main.ContinuousProperty = true;
+             //range_NormalAttack.ColliderActive(true); // 공격범위 활성화
+             MonsterPool.MonsterDamaged(1); // 공격 모션 뒤 공격하도록?
+
+             yield return attackDelay; // [DELAY] 다음 공격 가능시간
              
-             Debug.Log("<color=green>1 : 공격 가능으로 변환</color>");
-             _moveActor.AttackProperty = true;
+             main.AttackProperty = true;
              
-             yield return cancelDelay;
-             _moveActor.ContinuousProperty = false;
+             yield return cancelDelay; // [DELAY] 연속공격 취소지연시간
+             
+             main.ContinuousProperty = false;
              isRoutineProgress = false;
-             Debug.Log("<color=red>1 : 연속공격취소</color>");
+             //range_NormalAttack.ColliderActive(false);
              yield return null;
          }
 
         private IEnumerator CRT_SecondAttack()
         {
-            _moveActor.ContinuousProperty = true;
-            Debug.Log("<color=yellow>2 : 공격</color>");
+            main.ContinuousProperty = true;
+            //Debug.Log("<color=yellow>2 : 공격</color>");
             yield return attackDelay;
              
-            Debug.Log("<color=green>2 : 공격 가능으로 변환</color>");
-            _moveActor.AttackProperty = true;
+            //Debug.Log("<color=green>2 : 공격 가능으로 변환</color>");
+            main.AttackProperty = true;
              
             yield return cancelDelay;
-            _moveActor.ContinuousProperty = false;
+            main.ContinuousProperty = false;
             isRoutineProgress = false;
-            Debug.Log("<color=red>2 : 연속공격취소</color>");
+            //Debug.Log("<color=red>2 : 연속공격취소</color>");
+            //range_NormalAttack.ColliderActive(false);
             yield return null;
         }
 
         private IEnumerator CRT_ThirdAttack()
         {
-            Debug.Log("<color=yellow>3 : 공격</color>");
+            //Debug.Log("<color=yellow>3 : 공격</color>");
             yield return attackDelay;
 
-            _moveActor.AttackProperty = true;
+            main.AttackProperty = true;
             isRoutineProgress = false;
-            Debug.Log("<color=green>3 : 마지막 공격이라 머 없음</color>");
+            //Debug.Log("<color=green>3 : 마지막 공격이라 머 없음</color>");
+            //range_NormalAttack.ColliderActive(false);
             yield return null;
-        }
-
-        private void rangeActive(int _num)
-        {
-            range_NormalAttack.SetActive(false);
-            switch(_num)
-            {
-                case 0:
-                    range_NormalAttack.SetActive(true);
-                    break;
-                case 1:
-                    break;
-                case 2:
-                    break;
-            }
         }
         private void Awake()
         {
-            _moveActor = this.GetComponent<MoveActor>();
-            range_NormalAttack.gameObject.SetActive(false);
+            main = this.GetComponent<UC_CharacterBase>();
             isRoutineProgress = false;
+            
         } 
     }
     

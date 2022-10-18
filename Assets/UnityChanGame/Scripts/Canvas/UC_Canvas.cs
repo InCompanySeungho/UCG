@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using DG.Tweening;
 using Unity.PlasticSCM.Editor.CollabMigration;
 using UnityEditor;
@@ -11,7 +12,7 @@ namespace UC
     public class UC_Canvas : MonoBehaviour
     {
         private UC_SkillManager _skillManager;
-
+        [SerializeField] private UC_CharacterBase main;
         [SerializeField] private Image image_drift_Fill;
         [SerializeField] private Image image_drift_Effect;
         [SerializeField] private Image image_CooldownEffect;
@@ -22,8 +23,6 @@ namespace UC
         [SerializeField] private GameObject crosshair_Normal;
         [Header("0이 가장 아래가 되도록")]
         [SerializeField] private Image[] image_Charging;
-        
-        
         
         
         public void SKILL_DRIFT_DOWN()
@@ -46,15 +45,24 @@ namespace UC
         // 우클릭 누름. 차징 시작
         public void mouse_Right_DOWN()
         {
+            // 기본 상태는 느려짐.
             crosshairSetting(1);
             _skillManager.mouse_Input_Down(image_Charging, 0.3f);
+            // 0.3 * 3 초 지나면 빠른이동 활성화 되도록
         }
 
         // 우클릭 땜. 차징 취소 밑 초기화
         public void mouse_Right_UP()
         {
             crosshairSetting(0);
-            _skillManager.mouse_Input_Up();
+            _skillManager.mouse_Input_Up(image_Charging);
+            // 앞으로 빠른이동
+
+            if (_skillManager.canDash)
+            {
+                Debug.Log("대쉬한다!");
+                main.Dash();
+            }
         }
 
 

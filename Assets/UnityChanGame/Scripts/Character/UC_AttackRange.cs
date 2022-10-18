@@ -6,18 +6,34 @@ using UnityEngine;
 
 public class UC_AttackRange : MonoBehaviour
 {
-    //private MoveActor _moveActor;
+    private UC_CharacterBase _base;
+    private BoxCollider _collider;
 
     private void Awake()
     {
-        //_moveActor = this.transform.parent.parent.GetComponent<MoveActor>();
+        // 부모관계 변경 시 수정해줘야함
+        _collider = this.GetComponent<BoxCollider>();
+        _base = this.transform.parent.parent.GetComponent<UC_CharacterBase>();
+        ColliderActive(true);
     }
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Monster"))
         {
-            Debug.Log("큐에 포함시키기 : " + other.transform.name);
-            MonsterPool.getHitMonster(other.gameObject.GetComponent<UC_Monster>());
+            MonsterPool.in_HitMonster(other.GetComponent<UC_Monster>());
         }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Monster"))
+        {
+            MonsterPool.Out_HitMonster(other.GetComponent<UC_Monster>());
+        }
+    }
+
+    public void ColliderActive(bool isOn)
+    {
+        _collider.enabled = isOn;
     }
 }
